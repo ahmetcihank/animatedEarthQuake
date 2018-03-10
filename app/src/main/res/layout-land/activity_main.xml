@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.software02.newearthquake.MainActivity"
+    android:orientation="horizontal"
+    android:weightSum="8">
+
+ <!--<android.support.v7.widget.RecyclerView
+     android:layout_width="0dp"
+     android:layout_height="match_parent"
+     android:layout_weight="4"
+     android:id="@+id/titlesListView"/>
+
+ <TextView
+     android:layout_width="match_parent"
+     android:layout_height="220dp"
+     android:id="@+id/myContentText"
+     android:text="DENENMEMEME"
+     android:textSize="16dp"/>  -->
+
+ <com.google.android.gms.maps.MapView
+     android:id="@+id/heatMap"
+     android:layout_width="match_parent"
+     android:layout_height="match_parent" />
+
+</LinearLayout>

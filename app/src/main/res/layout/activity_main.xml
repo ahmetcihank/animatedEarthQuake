@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.software02.newearthquake.MainActivity"
+    android:orientation="vertical"
+    android:weightSum="8"
+    android:id="@+id/linLay"
+    >
+
+   <FrameLayout
+       android:layout_width="match_parent"
+       android:layout_height="0dp"
+       android:layout_weight="4"
+       android:id="@+id/mapFrame"/>
+       <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:weightSum="9">
+        <RadioButton
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="3"
+            android:id="@+id/google_map_option"
+            android:text="Gooogle Map"/>
+        <RadioButton
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="3"
+            android:id="@+id/arcgis_option"
+            android:text="Arcgis Map"/>
+
+        <RadioButton
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="3"
+            android:id="@+id/mapbox_option"
+            android:text="MAp Box"/>
+
+    </LinearLayout>
+
+    </LinearLayout>
+
+
+    <android.support.v7.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="3"
+        android:id="@+id/earthQuakeList"/>
+
+
+
+</LinearLayout>
