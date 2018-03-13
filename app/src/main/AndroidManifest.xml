@@ -33,10 +33,6 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDq0NKBBlaRvX_CkJnv_XbKR3WoEBGK4Go" />
 
-        <activity
-            android:name=".MActivity"
-            android:label="@string/title_activity_m"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

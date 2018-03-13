@@ -1,7 +1,6 @@
 package com.example.software02.newearthquake;
 
 import android.annotation.SuppressLint;
-import android.app.ProgressDialog;
 import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Environment;
@@ -16,27 +15,21 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RadioButton;
-import android.widget.TextView;
 
 
 import com.example.software02.newearthquake.Adapter.FeedAdapter;
-import com.example.software02.newearthquake.Adapter.TitleAdapter;
 import com.example.software02.newearthquake.Fragment.ArcgisFragment;
-import com.example.software02.newearthquake.Fragment.ContenetFragment;
 import com.example.software02.newearthquake.Fragment.HeatMapFragment;
 import com.example.software02.newearthquake.Fragment.MapBox;
 import com.example.software02.newearthquake.Fragment.MapFragment;
-import com.example.software02.newearthquake.Helper.Common;
 import com.example.software02.newearthquake.Helper.HTTPDataHandler;
 import com.example.software02.newearthquake.Interface.EarthQuakeService;
 import com.example.software02.newearthquake.Interface.ItemClickListener;
-import com.example.software02.newearthquake.Model.LatLonGoogle;
 import com.example.software02.newearthquake.Model.ListRetroModel;
 import com.example.software02.newearthquake.Model.RSSObject;
 import com.example.software02.newearthquake.Model.RootObject;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.gson.Gson;
-import com.mapbox.mapboxsdk.Mapbox;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -44,9 +37,6 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class MainActivity extends FragmentActivity implements MapFragment.MarkerListener, ItemClickListener,FeedAdapter.onListClickedRowListner
         {
