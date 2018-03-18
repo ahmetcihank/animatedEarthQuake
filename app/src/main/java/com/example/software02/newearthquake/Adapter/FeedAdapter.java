@@ -183,7 +183,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedViewHolder> {
 
                 onListClickedRowListner.onListSelected(latStr,lonStr, titles, mG);
                 markerListener.getLocation(latStr,lonStr, description);
-                Toast.makeText(mContext,"Fuck yuuuuuu", Toast.LENGTH_SHORT).show();
+                Toast.makeText(mContext,"Wow", Toast.LENGTH_SHORT).show();
 
                 final Animation animShake = AnimationUtils.loadAnimation(mContext,R.anim.shake);
 
