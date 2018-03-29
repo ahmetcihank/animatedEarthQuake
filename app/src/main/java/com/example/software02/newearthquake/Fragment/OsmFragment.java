@@ -30,15 +30,27 @@ import org.osmdroid.views.overlay.Marker;
  * Created by SOFTWARE02 on 1/23/2018.
  */
 
-public class ArcgisFragment extends Fragment implements  Runnable   {
+public class OsmFragment extends Fragment implements  Runnable   {
 
   /*   MapView mMapView;
      View view;
      ArcGISMap map; */
 
-    View view;
+
+  View view;
 
   MapView mapView;
+
+    double latitude, longitude;
+    MapController mMapController;
+
+    public void setLatitude(double latitude) {
+        this.latitude = 100*latitude;
+    }
+
+    public void setLongitude(double latitude) {
+        this.latitude = 100*latitude;
+    }
 
 
     @Override
@@ -55,32 +67,12 @@ public class ArcgisFragment extends Fragment implements  Runnable   {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-
-
-     /*   Point londonPoint = new Point(28677947.756181,22987445.6186465,2);
-        Viewpoint viewpoint = new Viewpoint(londonPoint,3.14);
-
         view = inflater.inflate(R.layout.arcgis_layout,container,false);
-        map  =  new ArcGISMap(Basemap.createNationalGeographic());    //new ArcGISMap(Basemap.Type.TERRAIN_WITH_LABELS, 34.056295, -117.195800, 16);
-        mMapView =(MapView) (view).findViewById(R.id.mapViewEsri);
-        mMapView.setViewpoint(viewpoint);
-        mMapView.setMap(map); */
-
-
-       // mMapView.setViewpointAsync(viewpoint,23);
-
-
-        view = inflater.inflate(R.layout.arcgis_layout,container,false);
-
-
-
-
-
 
         return view;
     }
 
-    public ArcgisFragment(){}
+    public OsmFragment(){}
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
@@ -93,7 +85,7 @@ public class ArcgisFragment extends Fragment implements  Runnable   {
         mapView =(MapView) (view).findViewById(R.id.mapViewOsm);
         mapView.setTileSource(TileSourceFactory.MAPNIK);
         mapView.setBuiltInZoomControls(true);
-        MapController mMapController = (MapController) mapView.getController();
+        mMapController = (MapController) mapView.getController();
         mMapController.setZoom(13);
         GeoPoint gPt = new GeoPoint(51500000, -150000);
         mMapController.setCenter(gPt);
@@ -104,6 +96,19 @@ public class ArcgisFragment extends Fragment implements  Runnable   {
         mapView.getOverlays().add(marker);
 
 
+    }
+
+    public void setMarker(){
+
+        mMapController = (MapController) mapView.getController();
+        mMapController.setZoom(13);
+        GeoPoint gPt = new GeoPoint(latitude, longitude);
+        mMapController.setCenter(gPt);
+        Marker marker = new Marker(mapView);
+        marker.setPosition(gPt);
+        //mMapController.setCenter();
+        mapView.getOverlays().clear();
+        mapView.getOverlays().add(marker);
     }
 
     @Override

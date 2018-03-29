@@ -102,7 +102,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback  {
         mgoogleMap = googleMap;
         googleMap.setMapType(mgoogleMap.MAP_TYPE_NORMAL);
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude,longitude), 5));
-        googleMap.addMarker(new MarkerOptions().position(new LatLng(latitude, longitude)).title("Hey Bitch"));
+        googleMap.addMarker(new MarkerOptions().position(new LatLng(latitude, longitude)).title("Hey"));
 
     }
 

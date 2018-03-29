@@ -4,29 +4,33 @@ import android.annotation.SuppressLint;
 import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Environment;
-import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RadioButton;
+import android.widget.Toast;
 
 
 import com.example.software02.newearthquake.Adapter.FeedAdapter;
-import com.example.software02.newearthquake.Fragment.ArcgisFragment;
+import com.example.software02.newearthquake.Fragment.OsmFragment;
+import com.example.software02.newearthquake.Fragment.CriteriaDialogFragment;
 import com.example.software02.newearthquake.Fragment.HeatMapFragment;
-import com.example.software02.newearthquake.Fragment.MapBox;
+
 import com.example.software02.newearthquake.Fragment.MapFragment;
 import com.example.software02.newearthquake.Helper.HTTPDataHandler;
-import com.example.software02.newearthquake.Interface.EarthQuakeService;
 import com.example.software02.newearthquake.Interface.ItemClickListener;
-import com.example.software02.newearthquake.Model.ListRetroModel;
-import com.example.software02.newearthquake.Model.RSSObject;
 import com.example.software02.newearthquake.Model.RootObject;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.gson.Gson;
@@ -38,23 +42,19 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class MainActivity extends FragmentActivity implements MapFragment.MarkerListener, ItemClickListener,FeedAdapter.onListClickedRowListner
+public class MainActivity extends AppCompatActivity implements MapFragment.MarkerListener, ItemClickListener,FeedAdapter.onListClickedRowListner
         {
 
 
     @BindView(R.id.google_map_option)
             RadioButton radioGoogle;
     @BindView(R.id.arcgis_option)
-            RadioButton radioArcgis;
-    @BindView(R.id.mapbox_option)
-            RadioButton radioMapBox;
-
+            RadioButton radioOsm;
 
 
 
   // RadioButton radioGoogle, radioArcgis;
     RecyclerView recyclerView;
-    RSSObject rssObject;
     FeedAdapter adapter;
     double latitude, longitude;
     MapFragment.MarkerListener markerListener;
@@ -67,14 +67,14 @@ public class MainActivity extends FragmentActivity implements MapFragment.Marker
     int mPositionTitle ;
     LinearLayout linearLayout;
     String magnitude;
-    EarthQuakeService mearthQuakeService;
-    ListRetroModel listRetroModel;
+
+
     RootObject retroModel;
 
     private String[] mPlanetTitles ={"Deneme", "deneme", "heheh"};
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
-
+    boolean googleOp =true;
 
 
     String returnLatStr, returnLonStr;
@@ -122,16 +122,18 @@ public class MainActivity extends FragmentActivity implements MapFragment.Marker
             //ArcGISMap map  = new ArcGISMap(Basemap.Type.TERRAIN_WITH_LABELS, 34.056295, -117.195800, 16);
             //radioGoogle =(RadioButton) findViewById(R.id.google_map_option);
             //radioArcgis =(RadioButton) findViewById(R.id.arcgis_option);
+
+
+            Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+            setSupportActionBar(myToolbar);
+
              linearLayout = (LinearLayout) findViewById(R.id.linLay);
 
 
             radioGoogle.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    radioArcgis.setChecked(false);
-                    radioMapBox.setChecked(false);
-
-
+                    radioOsm.setChecked(false);
 
                     MapFragment mapFragment = new MapFragment();
 
@@ -140,44 +142,30 @@ public class MainActivity extends FragmentActivity implements MapFragment.Marker
 
                     fragmentTransaction.replace(R.id.mapFrame, mapFragment).commit();
 
+                    googleOp =true;
+
                 }
             });
 
-            radioArcgis.setOnClickListener(new View.OnClickListener() {
+            radioOsm.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     radioGoogle.setChecked(false);
-                    radioMapBox.setChecked(false);
-                    ArcgisFragment arcgisFragment = new ArcgisFragment();
+
+                    OsmFragment osmFragment = new OsmFragment();
 
                     FragmentManager fm = getSupportFragmentManager();
                     FragmentTransaction fragmentTransaction = fm.beginTransaction();
 
-                    fragmentTransaction.replace(R.id.mapFrame, arcgisFragment).commit();
+                    fragmentTransaction.replace(R.id.mapFrame, osmFragment).commit();
+
+                    googleOp =false;
 
 
                 }
             });
 
 
-            radioMapBox.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    radioArcgis.setChecked(false);
-                    radioGoogle.setChecked(false);
-
-
-
-
-                    MapBox mapBox = new MapBox();
-
-
-                    FragmentManager fm = getSupportFragmentManager();
-                    FragmentTransaction fragmentTransaction = fm.beginTransaction();
-
-                    fragmentTransaction.replace(R.id.mapFrame, mapBox).commit();
-                }
-            });
 
 
 
@@ -207,28 +195,7 @@ public class MainActivity extends FragmentActivity implements MapFragment.Marker
 
         else if(getResources().getConfiguration().orientation== Configuration.ORIENTATION_LANDSCAPE)
         {
-           /* final ContenetFragment contenetFragment = new ContenetFragment();
-            mtitles = savedInstanceState.getStringArrayList("mtitles");
-            mdescription = savedInstanceState.getStringArrayList("mdescription");
 
-            final TextView mTextView = (TextView) findViewById(R.id.myContentText);
-            RecyclerView recyclerViewTitle = findViewById(R.id.titlesListView);
-
-
-            LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false);
-            recyclerViewTitle.setLayoutManager(linearLayoutManager);
-            TitleAdapter adapter = new TitleAdapter(getBaseContext(), mtitles, new TitleAdapter.onClickTitleListener() {
-                @Override
-                public void onTitleSelected(int positionOftitle) {
-
-
-                    mPositionTitle =positionOftitle ;
-                    mTextView.setText(mdescription.get(mPositionTitle));
-
-
-                }
-            });
-            recyclerViewTitle.setAdapter(adapter);  */
 
             heatLatitude = savedInstanceState.getStringArrayList("mheatLatitude");
             heatLongitude = savedInstanceState.getStringArrayList("mheatLongitude");
@@ -284,24 +251,39 @@ public class MainActivity extends FragmentActivity implements MapFragment.Marker
                         longitude= Double.parseDouble(lon);
                         magnitude = mg;
 
-                        MapFragment mapFragment = (MapFragment) getSupportFragmentManager().findFragmentById(R.id.mapFrame);
 
-                        if(mapFragment!= null)
+
+                        if( googleOp ==true)
+
                         {
-                            GoogleMap googleMap;
+                            MapFragment mapFragment = (MapFragment) getSupportFragmentManager().findFragmentById(R.id.mapFrame);
 
-                            mapFragment.setLatitude(latitude);
-                            mapFragment.setLongitude(longitude);
-                            //mapFragment.onMapReady(googleMap);
-                            mapFragment.setMarker();
+                            if (mapFragment != null) {
+                                // GoogleMap googleMap;
 
-                           // mapFragment.mgoogleMap
+                                mapFragment.setLatitude(latitude);
+                                mapFragment.setLongitude(longitude);
+                                //mapFragment.onMapReady(googleMap);
+                                mapFragment.setMarker();
 
+                            }
 
                         }
 
-                     //   setLatitude(latitude);
-                     //   setLongitude(longitude);
+
+                        else if(googleOp==false) {
+                            try {
+
+                                OsmFragment osmFragment = (OsmFragment) getSupportFragmentManager().findFragmentById(R.id.mapFrame);
+                                if (osmFragment != null) {
+                                    osmFragment.setLatitude(latitude);
+                                    osmFragment.setLongitude(longitude);
+                                    osmFragment.setMarker();
+
+                                }
+                            } catch (Error err) {
+                            }
+                        }
 
 
                     }
@@ -329,9 +311,6 @@ public class MainActivity extends FragmentActivity implements MapFragment.Marker
 
 
 
-
-
-
     @Override
     public void getLocation(String lat, String lon, String description) {
 
@@ -355,11 +334,39 @@ public class MainActivity extends FragmentActivity implements MapFragment.Marker
 
 
 
-
-
-
     @Override
     public void onListSelected(String lat, String lon, List<String> titles, String magnitude) {
 
     }
-}
+
+    @Override
+     public boolean onCreateOptionsMenu(Menu menu)
+     {
+         MenuInflater menuInflater = getMenuInflater();
+         menuInflater.inflate(R.menu.m, menu);
+         return  true;
+     }
+
+
+            @Override
+            public boolean onOptionsItemSelected(MenuItem item) {
+                switch (item.getItemId())
+                {
+                    case R.id.action_add_criteria:
+                        Toast.makeText(getBaseContext(),"This is Criteria",Toast.LENGTH_SHORT).show();
+                        FragmentManager fragmentManager =   getSupportFragmentManager();
+                        Fragment frag = fragmentManager.findFragmentByTag("criteria_frag");
+
+                        if (frag != null)
+                        {
+                                  fragmentManager.beginTransaction().remove(frag).commit();
+                        }
+                        
+                        CriteriaDialogFragment criteriaDialogFragment = CriteriaDialogFragment.getNewInstance();
+                        criteriaDialogFragment.show(fragmentManager,"criteria_frag");
+                        
+
+                }
+                return true;
+            }
+        }
