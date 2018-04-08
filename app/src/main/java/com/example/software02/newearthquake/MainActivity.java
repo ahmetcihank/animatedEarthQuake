@@ -13,10 +13,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RadioButton;
@@ -34,10 +38,13 @@ import com.example.software02.newearthquake.Interface.ItemClickListener;
 import com.example.software02.newearthquake.Model.RootObject;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.File;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -63,6 +70,9 @@ public class MainActivity extends AppCompatActivity implements MapFragment.Marke
     List<String> mdescription;
     List<String> heatLatitude = new ArrayList<String>();
     List<String> heatLongitude = new ArrayList<String>();
+    Boolean visibility = false;
+    EditText meditText = null;
+    List<RootObject> roott;
 
     int mPositionTitle ;
     LinearLayout linearLayout;
@@ -128,6 +138,92 @@ public class MainActivity extends AppCompatActivity implements MapFragment.Marke
             setSupportActionBar(myToolbar);
 
              linearLayout = (LinearLayout) findViewById(R.id.linLay);
+             meditText = (EditText) findViewById(R.id.myEditText);
+
+
+             meditText.addTextChangedListener(new TextWatcher() {
+                 @Override
+                 public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+                 }
+
+                 @Override
+                 public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+
+                     String ad = charSequence.toString();
+
+
+
+
+/*
+                     List<RootObject> result = roott.stream() // obtain a stream from the list
+                             .filter(item -> !"three".matches(".*"+ad+".*"))
+                             .collect(Collectors.toList()); */
+
+
+                     List<RootObject> result = roott.stream().filter(p -> p.getLocation().matches(".*"+ad.toUpperCase()+".*")).collect(Collectors.toList());
+
+
+
+
+                     adapter = new FeedAdapter(result, getBaseContext(), new FeedAdapter.onListClickedRowListner() {
+                         @Override
+                         public void onListSelected(String lat, String lon, List<String> titles, String mg) {
+
+                             latitude= Double.parseDouble(lat);
+                             longitude= Double.parseDouble(lon);
+                             magnitude = mg;
+
+
+
+                             if( googleOp ==true)
+
+                             {
+                                 MapFragment mapFragment = (MapFragment) getSupportFragmentManager().findFragmentById(R.id.mapFrame);
+
+                                 if (mapFragment != null) {
+                                     // GoogleMap googleMap;
+
+                                     mapFragment.setLatitude(latitude);
+                                     mapFragment.setLongitude(longitude);
+                                     //mapFragment.onMapReady(googleMap);
+                                     mapFragment.setMarker();
+
+                                 }
+
+                             }
+
+
+                             else if(googleOp==false) {
+                                 try {
+
+                                     OsmFragment osmFragment = (OsmFragment) getSupportFragmentManager().findFragmentById(R.id.mapFrame);
+                                     if (osmFragment != null) {
+                                         osmFragment.setLatitude(latitude);
+                                         osmFragment.setLongitude(longitude);
+                                         osmFragment.setMarker();
+
+                                     }
+                                 } catch (Error err) {
+                                 }
+                             }
+
+
+                         }
+                     },linearLayout,recyclerView);
+                     recyclerView.setAdapter(adapter);
+                     adapter.notifyDataSetChanged();
+
+                     Log.e("Test",ad);
+                 }
+
+                 @Override
+                 public void afterTextChanged(Editable editable) {
+
+
+                 }
+             });
 
 
             radioGoogle.setOnClickListener(new View.OnClickListener() {
@@ -164,9 +260,6 @@ public class MainActivity extends AppCompatActivity implements MapFragment.Marke
 
                 }
             });
-
-
-
 
 
             recyclerView = (RecyclerView) findViewById(R.id.earthQuakeList);
@@ -237,13 +330,15 @@ public class MainActivity extends AppCompatActivity implements MapFragment.Marke
             @Override
             protected void onPostExecute(String s) {
 
-               RootObject rootObject[] = new Gson().fromJson(s,RootObject[].class);
+              // RootObject rootObject[] = new Gson().fromJson(s,RootObject[].class);
+               Type listType = new TypeToken<ArrayList<RootObject>>(){}.getType();
+               roott= new Gson().fromJson(s,listType);
 
 
 
 
 
-                adapter = new FeedAdapter(rootObject, getBaseContext(), new FeedAdapter.onListClickedRowListner() {
+                adapter = new FeedAdapter(roott, getBaseContext(), new FeedAdapter.onListClickedRowListner() {
                     @Override
                     public void onListSelected(String lat, String lon, List<String> titles, String mg) {
 
@@ -291,10 +386,10 @@ public class MainActivity extends AppCompatActivity implements MapFragment.Marke
                 recyclerView.setAdapter(adapter);
                 adapter.notifyDataSetChanged();
 
-                for(int i =0; i<rootObject.length; i++)
+                for(int i =0; i<roott.size(); i++)
                 {
-                    heatLatitude.add(rootObject[i].getLatitude());
-                    heatLongitude.add(rootObject[i].getLongitude());
+                    heatLatitude.add(roott.get(i).getLatitude());
+                    heatLongitude.add(roott.get(i).getLongitude());
                 }
 
 
@@ -361,10 +456,23 @@ public class MainActivity extends AppCompatActivity implements MapFragment.Marke
                         {
                                   fragmentManager.beginTransaction().remove(frag).commit();
                         }
-                        
+
                         CriteriaDialogFragment criteriaDialogFragment = CriteriaDialogFragment.getNewInstance();
                         criteriaDialogFragment.show(fragmentManager,"criteria_frag");
-                        
+
+                    case R.id.show_edit_text_option:
+                         Toast.makeText(this, "Give Criteria", Toast.LENGTH_SHORT).show();
+
+
+                         if(visibility == false){
+                            meditText.setVisibility(View.VISIBLE);
+                            visibility = true;
+                         }
+                         else
+                              {
+                               visibility = false;
+                               meditText.setVisibility(View.GONE);
+                              }
 
                 }
                 return true;

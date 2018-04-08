@@ -6,4 +6,13 @@
         android:orderInCategory="100"
         android:title="Add Alert Criteria"
         app:showAsAction="never" />
+
+    <item
+
+        android:id="@+id/show_edit_text_option"
+        android:title="search"
+        app:showAsAction="never"
+        android:orderInCategory="100"
+        />
+
 </menu>

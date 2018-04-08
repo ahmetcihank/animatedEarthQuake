@@ -102,7 +102,7 @@ public class OsmFragment extends Fragment implements  Runnable   {
 
         mMapController = (MapController) mapView.getController();
         mMapController.setZoom(13);
-        GeoPoint gPt = new GeoPoint(latitude, longitude);
+        GeoPoint gPt = new GeoPoint(latitude*100000, longitude*10000);
         mMapController.setCenter(gPt);
         Marker marker = new Marker(mapView);
         marker.setPosition(gPt);

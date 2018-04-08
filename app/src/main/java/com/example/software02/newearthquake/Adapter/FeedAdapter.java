@@ -40,7 +40,9 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedViewHolder> {
     onListClickedRowListner onListClickedRowListner;
     String latStr;
     String lonStr;
-    RootObject rootObject[];
+   // RootObject rootObject[];
+
+    List<RootObject> rootObjects;
     int mExpandedPosition = 0;
     private RecyclerView recyclerView;
     private SparseBooleanArray expandState = new SparseBooleanArray();
@@ -62,17 +64,17 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedViewHolder> {
 
 
 
-    public FeedAdapter(RootObject rootObject[], Context mContext , onListClickedRowListner onListClickedRowListner,
+    public FeedAdapter(List<RootObject> rootObjects, Context mContext , onListClickedRowListner onListClickedRowListner,
                        LinearLayout linearLayout, RecyclerView recyclerView) {
        // this.rssObject = rssObject;
-
+        this.rootObjects = rootObjects;
         this.mContext = mContext;
         this.onListClickedRowListner = onListClickedRowListner;
         this.linearLayout = linearLayout;
-        this.rootObject = rootObject;
+
         this.recyclerView = recyclerView;
 
-        for (int i = 0; i < rootObject.length; i++) {
+        for (int i = 0; i <rootObjects.size(); i++) {
             expandState.append(i, false);
         }
 
@@ -95,27 +97,27 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedViewHolder> {
     public void onBindViewHolder(final FeedViewHolder holder, int position) {
 
 
-        holder.earthquakeLocation.setText(rootObject[position].getLocation());
-      //  holder.eartQuakeTitle.setText( rootObject[position].getDate_time());
-        holder.getEarthquakeDepth.setText(rootObject[position].getDepth());
-        holder.getEarthquakeMagnitude.setText(rootObject[position].getMagnitude());
+        holder.earthquakeLocation.setText(rootObjects.get(position).getLocation());
+      //  holder.eartQuakeTitle.setText( rootObjects.get(position).getDate_time());
+        holder.getEarthquakeDepth.setText(rootObjects.get(position).getDepth());
+        holder.getEarthquakeMagnitude.setText(rootObjects.get(position).getMagnitude());
 
 
        // DateFormat df = DateFormat.getDateInstance(DateFormat.LONG, Locale.ENGLISH);
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-        String earthQuakeDateString = df.format(rootObject[position].getDate_time());
+        String earthQuakeDateString = df.format(rootObjects.get(position).getDate_time());
 
         holder.earthQuakeTimeValue.setText(earthQuakeDateString);
 
 
-        final  String mG = rootObject[position].getMagnitude();
-        latStr = rootObject[position].getLatitude();
-        lonStr = rootObject[position].getLongitude();
+        final  String mG = rootObjects.get(position).getMagnitude();
+        latStr = rootObjects.get(position).getLatitude();
+        lonStr = rootObjects.get(position).getLongitude();
 
 
-        for(int i=0; i<rootObject.length;i++)
+        for(int i=0; i<rootObjects.size();i++)
         {
-            titles.add(rootObject[i].getTitle());
+            titles.add(rootObjects.get(position).getTitle());
         }
 
         final float magnitute = Float.parseFloat(mG);
@@ -160,8 +162,8 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedViewHolder> {
             public void onClick(View view, final int position, boolean isLongClick) {
 
 
-                latStr = rootObject[position].getLatitude();
-                lonStr = rootObject[position].getLongitude();
+                latStr = rootObjects.get(position).getLatitude();
+                lonStr = rootObjects.get(position).getLongitude();
 
                 onListClickedRowListner.onListSelected(latStr,lonStr, titles, mG);
                 markerListener.getLocation(latStr,lonStr, description);
@@ -239,7 +241,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedViewHolder> {
 
     @Override
     public int getItemCount() {
-        return rootObject.length;
+        return rootObjects.size();
     }
 
 }
