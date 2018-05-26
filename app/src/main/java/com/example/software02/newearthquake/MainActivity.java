@@ -4,11 +4,13 @@ import android.annotation.SuppressLint;
 import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -73,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.Marke
     Boolean visibility = false;
     EditText meditText = null;
     List<RootObject> roott;
-
+    SwipeRefreshLayout swipeRefreshLayout;
     int mPositionTitle ;
     LinearLayout linearLayout;
     String magnitude;
@@ -117,6 +119,9 @@ public class MainActivity extends AppCompatActivity implements MapFragment.Marke
         outState.putStringArrayList("mdescription", (ArrayList<String>) mdescription);
         outState.putStringArrayList("mheatLatitude", (ArrayList<String>) heatLatitude);
         outState.putStringArrayList("mheatLongitude", (ArrayList<String>) heatLongitude);
+
+
+       // outState.putParcelableArrayList("mroot", (ArrayList<? extends Parcelable>) roott);
 
     }
 
@@ -265,6 +270,17 @@ public class MainActivity extends AppCompatActivity implements MapFragment.Marke
             recyclerView = (RecyclerView) findViewById(R.id.earthQuakeList);
             LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
             recyclerView.setLayoutManager(linearLayoutManager);
+
+            swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swiperefresh);
+            swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+                @Override
+                public void onRefresh() {
+                    loadRSS2();
+                }
+            });
+
+
+
 
 
            loadRSS2();

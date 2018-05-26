@@ -31,7 +31,8 @@ public class CriteriaDialogFragment extends DialogFragment
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
+    {
         View root;
         root= inflater.inflate(R.layout.criteria_fragment_dialog,container, false);
 
