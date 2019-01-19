@@ -3,8 +3,6 @@ package com.example.software02.newearthquake;
 import android.annotation.SuppressLint;
 import android.content.res.Configuration;
 import android.os.AsyncTask;
-import android.os.Environment;
-import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -27,22 +25,25 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.Toast;
-
-
 import com.example.software02.newearthquake.Adapter.FeedAdapter;
-import com.example.software02.newearthquake.Fragment.OsmFragment;
 import com.example.software02.newearthquake.Fragment.CriteriaDialogFragment;
 import com.example.software02.newearthquake.Fragment.HeatMapFragment;
-
 import com.example.software02.newearthquake.Fragment.MapFragment;
 import com.example.software02.newearthquake.Helper.HTTPDataHandler;
 import com.example.software02.newearthquake.Interface.ItemClickListener;
 import com.example.software02.newearthquake.Model.RootObject;
-import com.google.android.gms.maps.GoogleMap;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
-import java.io.File;
+import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.annotations.Marker;
+import com.mapbox.mapboxsdk.annotations.MarkerOptions;
+import com.mapbox.mapboxsdk.camera.CameraPosition;
+import com.mapbox.mapboxsdk.constants.Style;
+import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.MapboxMapOptions;
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.maps.SupportMapFragment;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,17 +53,12 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class MainActivity extends AppCompatActivity implements MapFragment.MarkerListener, ItemClickListener,FeedAdapter.onListClickedRowListner
-        {
-
-
+ {
     @BindView(R.id.google_map_option)
             RadioButton radioGoogle;
     @BindView(R.id.arcgis_option)
             RadioButton radioOsm;
 
-
-
-  // RadioButton radioGoogle, radioArcgis;
     RecyclerView recyclerView;
     FeedAdapter adapter;
     double latitude, longitude;
@@ -79,6 +75,8 @@ public class MainActivity extends AppCompatActivity implements MapFragment.Marke
     int mPositionTitle ;
     LinearLayout linearLayout;
     String magnitude;
+    SupportMapFragment supportMapFragment= null;
+    Marker marker;
 
 
     RootObject retroModel;
@@ -119,11 +117,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.Marke
         outState.putStringArrayList("mdescription", (ArrayList<String>) mdescription);
         outState.putStringArrayList("mheatLatitude", (ArrayList<String>) heatLatitude);
         outState.putStringArrayList("mheatLongitude", (ArrayList<String>) heatLongitude);
-
-
-       // outState.putParcelableArrayList("mroot", (ArrayList<? extends Parcelable>) roott);
-
-    }
+        }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -133,12 +127,6 @@ public class MainActivity extends AppCompatActivity implements MapFragment.Marke
 
         if(getResources().getConfiguration().orientation==Configuration.ORIENTATION_PORTRAIT) {
             ButterKnife.bind(this);
-
-            //ArcGISMap map  = new ArcGISMap(Basemap.Type.TERRAIN_WITH_LABELS, 34.056295, -117.195800, 16);
-            //radioGoogle =(RadioButton) findViewById(R.id.google_map_option);
-            //radioArcgis =(RadioButton) findViewById(R.id.arcgis_option);
-
-
             Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
             setSupportActionBar(myToolbar);
 
@@ -155,22 +143,9 @@ public class MainActivity extends AppCompatActivity implements MapFragment.Marke
                  @Override
                  public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
-
                      String ad = charSequence.toString();
 
-
-
-
-/*
-                     List<RootObject> result = roott.stream() // obtain a stream from the list
-                             .filter(item -> !"three".matches(".*"+ad+".*"))
-                             .collect(Collectors.toList()); */
-
-
                      List<RootObject> result = roott.stream().filter(p -> p.getLocation().matches(".*"+ad.toUpperCase()+".*")).collect(Collectors.toList());
-
-
-
 
                      adapter = new FeedAdapter(result, getBaseContext(), new FeedAdapter.onListClickedRowListner() {
                          @Override
@@ -180,71 +155,68 @@ public class MainActivity extends AppCompatActivity implements MapFragment.Marke
                              longitude= Double.parseDouble(lon);
                              magnitude = mg;
 
-
-
                              if( googleOp ==true)
-
                              {
                                  MapFragment mapFragment = (MapFragment) getSupportFragmentManager().findFragmentById(R.id.mapFrame);
 
-                                 if (mapFragment != null) {
-                                     // GoogleMap googleMap;
-
+                                 if (mapFragment != null)
+                                 {
                                      mapFragment.setLatitude(latitude);
                                      mapFragment.setLongitude(longitude);
-                                     //mapFragment.onMapReady(googleMap);
                                      mapFragment.setMarker();
-
                                  }
-
                              }
 
-
-                             else if(googleOp==false) {
+                             else if(googleOp==false)
+                             {
                                  try {
+                                     LatLng mapBoxEarthQuake = new LatLng(latitude, longitude);
+                                     supportMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.mapFrame);
 
-                                     OsmFragment osmFragment = (OsmFragment) getSupportFragmentManager().findFragmentById(R.id.mapFrame);
-                                     if (osmFragment != null) {
-                                         osmFragment.setLatitude(latitude);
-                                         osmFragment.setLongitude(longitude);
-                                         osmFragment.setMarker();
+                                     if (supportMapFragment != null)
+                                     {
+                                         final FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                                         LatLng patagonia = new LatLng(latitude, longitude);
+                                         MapboxMapOptions options = new MapboxMapOptions();
+                                         options.styleUrl(Style.SATELLITE);
+                                         options.camera(new CameraPosition.Builder()
+                                                 .target(patagonia)
+                                                 .zoom(9)
+                                                 .build());
+                                         supportMapFragment = SupportMapFragment.newInstance(options);
 
+                                         transaction.add(R.id.mapFrame, supportMapFragment, "com.mapbox.map");
+                                         transaction.commit();
                                      }
-                                 } catch (Error err) {
+                                 }
+                                 catch (Error err)
+                                 {
+
                                  }
                              }
-
-
                          }
                      },linearLayout,recyclerView);
                      recyclerView.setAdapter(adapter);
                      adapter.notifyDataSetChanged();
-
                      Log.e("Test",ad);
                  }
 
                  @Override
                  public void afterTextChanged(Editable editable) {
-
-
                  }
              });
 
 
             radioGoogle.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onClick(View view) {
+                public void onClick(View view)
+                {
                     radioOsm.setChecked(false);
-
                     MapFragment mapFragment = new MapFragment();
-
                     FragmentManager fm = getSupportFragmentManager();
                     FragmentTransaction fragmentTransaction = fm.beginTransaction();
-
                     fragmentTransaction.replace(R.id.mapFrame, mapFragment).commit();
-
                     googleOp =true;
-
                 }
             });
 
@@ -252,21 +224,21 @@ public class MainActivity extends AppCompatActivity implements MapFragment.Marke
                 @Override
                 public void onClick(View view) {
                     radioGoogle.setChecked(false);
+                    final FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                    Mapbox.getInstance(getBaseContext(),
+                            "pk.eyJ1IjoiYWNpaGFuayIsImEiOiJjamRobGVpdjUwd2tpMndtZmpsemxybjBjIn0.dmYB5bqnEqC57WqfH06hIQ");
 
-                    OsmFragment osmFragment = new OsmFragment();
+                    LatLng patagonia = new LatLng(40, 40);
 
-                    FragmentManager fm = getSupportFragmentManager();
-                    FragmentTransaction fragmentTransaction = fm.beginTransaction();
-
-                    fragmentTransaction.replace(R.id.mapFrame, osmFragment).commit();
-
+                    MapboxMapOptions options = new MapboxMapOptions();
+                    options.styleUrl(Style.DARK);
+                    options.camera(new CameraPosition.Builder().target(patagonia).zoom(5).build());
+                    supportMapFragment = SupportMapFragment.newInstance(options);
+                    transaction.add(R.id.mapFrame, supportMapFragment, "com.mapbox.map");
+                    transaction.commit();
                     googleOp =false;
-
-
                 }
             });
-
-
             recyclerView = (RecyclerView) findViewById(R.id.earthQuakeList);
             LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
             recyclerView.setLayoutManager(linearLayoutManager);
@@ -279,82 +251,46 @@ public class MainActivity extends AppCompatActivity implements MapFragment.Marke
                 }
             });
 
-
-
-
-
-           loadRSS2();
-
-
-            str1 = getPackageName();
-
-            File s = Environment.getExternalStorageDirectory();
-
-        /*Set Default Map To Google Map Arcgis (Doesnt Work properly)*/
+            loadRSS2();
+           /*Set Default Map To Google Map*/
             MapFragment arcgisFragment = new MapFragment();
-
             FragmentManager fm = getSupportFragmentManager();
             FragmentTransaction fragmentTransaction = fm.beginTransaction();
-
             fragmentTransaction.add(R.id.mapFrame, arcgisFragment).commit();
 
         }
 
         /*DETERMINE THE ORIENTATION MODE OF PHONE AND THEN SET THE  LAYOUT */
-
         else if(getResources().getConfiguration().orientation== Configuration.ORIENTATION_LANDSCAPE)
         {
-
-
             heatLatitude = savedInstanceState.getStringArrayList("mheatLatitude");
             heatLongitude = savedInstanceState.getStringArrayList("mheatLongitude");
-
             HeatMapFragment heatMapFragment = new HeatMapFragment();
             FragmentManager fm = getSupportFragmentManager();
             FragmentTransaction  fragmentTransaction = fm.beginTransaction();
             fragmentTransaction.add(R.id.heatMap,heatMapFragment).commit();
-
-
             heatMapFragment.setLatStr(heatLatitude);
             heatMapFragment.setLonStr(heatLongitude);
-
-
         }
-
-
-
-
-
-
     }
 
     private void loadRSS2()
     {
         @SuppressLint("StaticFieldLeak") AsyncTask<String, String,String> loadRSSAsync = new AsyncTask<String, String, String>() {
-
-
             @Override
             protected String doInBackground(String... strings) {
                 String result;
-
                 HTTPDataHandler http =new HTTPDataHandler();
                 result = http.getHTTPData(strings[0]);
                 return  result;
-
             }
 
             @Override
             protected void onPostExecute(String s) {
 
-              // RootObject rootObject[] = new Gson().fromJson(s,RootObject[].class);
                Type listType = new TypeToken<ArrayList<RootObject>>(){}.getType();
                roott= new Gson().fromJson(s,listType);
-
-
-
-
-
-                adapter = new FeedAdapter(roott, getBaseContext(), new FeedAdapter.onListClickedRowListner() {
+               adapter = new FeedAdapter(roott, getBaseContext(), new FeedAdapter.onListClickedRowListner() {
                     @Override
                     public void onListSelected(String lat, String lon, List<String> titles, String mg) {
 
@@ -363,36 +299,31 @@ public class MainActivity extends AppCompatActivity implements MapFragment.Marke
                         magnitude = mg;
 
 
-
                         if( googleOp ==true)
-
                         {
                             MapFragment mapFragment = (MapFragment) getSupportFragmentManager().findFragmentById(R.id.mapFrame);
-
-                            if (mapFragment != null) {
-                                // GoogleMap googleMap;
-
+                            if (mapFragment != null)
+                            {
                                 mapFragment.setLatitude(latitude);
                                 mapFragment.setLongitude(longitude);
-                                //mapFragment.onMapReady(googleMap);
                                 mapFragment.setMarker();
-
                             }
-
                         }
-
 
                         else if(googleOp==false) {
                             try {
-
-                                OsmFragment osmFragment = (OsmFragment) getSupportFragmentManager().findFragmentById(R.id.mapFrame);
-                                if (osmFragment != null) {
-                                    osmFragment.setLatitude(latitude);
-                                    osmFragment.setLongitude(longitude);
-                                    osmFragment.setMarker();
-
+                                LatLng earthqkposition = new LatLng(latitude,longitude);
+                                   supportMapFragment.getMapAsync(new OnMapReadyCallback() {
+                                       @Override
+                                       public void onMapReady(MapboxMap mapboxMap) {
+                                           mapboxMap.setCameraPosition((new CameraPosition.Builder().target(earthqkposition).zoom(6).build()));
+                                           marker = mapboxMap.addMarker(new MarkerOptions().position(earthqkposition));
+                                       }
+                                   });
                                 }
-                            } catch (Error err) {
+                            catch (Error err)
+                            {
+
                             }
                         }
 
@@ -407,47 +338,29 @@ public class MainActivity extends AppCompatActivity implements MapFragment.Marke
                     heatLatitude.add(roott.get(i).getLatitude());
                     heatLongitude.add(roott.get(i).getLongitude());
                 }
-
-
             }
         };
 
-      //  StringBuilder sb = new StringBuilder(RSS_to_Json_API);
-       // sb.append(link);
-        //loadRSSAsync.execute(sb.toString());
-
         loadRSSAsync.execute("https://earthquake-report.com/feeds/recent-eq?json");
-
         }
-
 
 
     @Override
     public void getLocation(String lat, String lon, String description) {
-
         MapFragment mapFragment = (MapFragment) getSupportFragmentManager().findFragmentById(R.id.mapFrame);
-
         if(mapFragment!= null)
         {
-
-
         }
-
-
     }
 
 
     @Override
     public void onClick(View view, int position, boolean isLongClick) {
-
-
     }
-
 
 
     @Override
     public void onListSelected(String lat, String lon, List<String> titles, String magnitude) {
-
     }
 
     @Override
@@ -468,27 +381,22 @@ public class MainActivity extends AppCompatActivity implements MapFragment.Marke
                         FragmentManager fragmentManager =   getSupportFragmentManager();
                         Fragment frag = fragmentManager.findFragmentByTag("criteria_frag");
 
-                        if (frag != null)
-                        {
+                        if (frag != null) {
                                   fragmentManager.beginTransaction().remove(frag).commit();
                         }
-
                         CriteriaDialogFragment criteriaDialogFragment = CriteriaDialogFragment.getNewInstance();
                         criteriaDialogFragment.show(fragmentManager,"criteria_frag");
 
                     case R.id.show_edit_text_option:
                          Toast.makeText(this, "Give Criteria", Toast.LENGTH_SHORT).show();
-
-
                          if(visibility == false){
                             meditText.setVisibility(View.VISIBLE);
                             visibility = true;
                          }
-                         else
-                              {
+                         else{
                                visibility = false;
                                meditText.setVisibility(View.GONE);
-                              }
+                         }
 
                 }
                 return true;
