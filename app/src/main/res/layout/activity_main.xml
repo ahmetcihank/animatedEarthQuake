@@ -54,13 +54,13 @@
             android:layout_height="match_parent"
             android:layout_weight="4"
             android:id="@+id/google_map_option"
-            android:text="Gooogle Map"/>
+            android:text="Google Map"/>
         <RadioButton
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="4"
             android:id="@+id/arcgis_option"
-            android:text="Osm Map"/>
+            android:text="Map Box"/>
 
 
 
